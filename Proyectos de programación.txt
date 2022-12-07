@@ -1,0 +1,13 @@
+
+	* Ambiente en conda:
+		conda activate OCJProjects
+
+	* Correo de GMAIL de interno:
+		Cuenta: AngelAnaya.OnCampusIntern@gmail.com
+		Contraseña: AngelOCI
+
+		Correo de recuperación: kikaansyaalamea@gmail.com (mi cuenta personal)
+
+	* Github
+		Contraseña: AngelOCI1027
+		Nombre de usuario: AngelAnayaOCI
