@@ -15,3 +15,10 @@
 
 	* Repositorio de github: Dashboards
 		URL: https://github.com/AngelAnayaOCI/Dashboards.git
+
+	* Mal ejecución del git init:
+		1. Borrar carpeta ".git":
+		En la terminal de bash, codificar "rm -rf .git"
+
+		
+		
