@@ -101,19 +101,25 @@ elif option_selected == "MiTEC":
     df_mitec_final = pd.merge(df_mitec,df_campañas, how = "left")
     df_mitec_nulos = df_mitec_final.isnull().sum(axis=1)
     df_mitec_final["Estatus"] = ["No encontrado" if num_nulos>2 else "Encontrado" for num_nulos in df_mitec_nulos]
-    df_mitec_final = df_mitec_final[['1er prefijo (TyE)',
+    # Solo incluirá información de las iniciativas encontradas
+    df_mitec_final = df_mitec_final[df_mitec_final["Estatus"] == "Encontrado"]
+    df_mitec_final["Num_prefijos"] = np.where(df_mitec_final["2do prefijo (pilar)"] == "-",2,3)
+    df_mitec_final_1 = df_mitec_final[['1er prefijo (TyE)',
         '2do prefijo (pilar)', '3er prefijo (area o VP)','Nombre de campaña','Iniciativa','Estatus',
         'Mes','Número de clics']]
-    df_mitec_final.head(3)
+    df_mitec_final_2 = df_mitec_final[['1er prefijo (TyE)',
+        '2do prefijo (pilar)', '3er prefijo (area o VP)','Nombre de campaña','Iniciativa',"Num_prefijos",
+        'Estatus','Mes','Número de clics']]
+    #df_mitec_final_1.head(3)
 
-    month_options = df_mitec_final["Mes"].unique().tolist()
+    month_options = df_mitec_final_1["Mes"].unique().tolist()
     month_options.append("Todos los meses")
     months_selected = sidebar.multiselect("Meses:", month_options, default=["Todos los meses"])
 
     if "Todos los meses" in months_selected:
-        df_mitec_2 = df_mitec_final.copy()
+        df_mitec_2 = df_mitec_final_1.copy()
     else:
-        df_mitec_2 = df_mitec_final[df_mitec_finaldf_mitec_final["Mes"].isin(months_selected)]
+        df_mitec_2 = df_mitec_final_1[df_mitec_final_1["Mes"].isin(months_selected)]
     # Análisis por iniciativa y mes
     st.markdown('### Análisis por iniciativas y mes')
     with st.expander("Ver análisis"):
@@ -140,6 +146,11 @@ elif option_selected == "MiTEC":
         mitec_analisis_mes["Número de clics promedio diario"] = mitec_analisis_mes["Número de clics promedio mensual"]/30
         mitec_analisis_mes = mitec_analisis_mes.sort_values(by=["Mes"], ascending=True).reset_index(drop=True)
         st.dataframe(mitec_analisis_mes)
+
+    # Construcción del gráfico de Sankey
+    st.markdown('### Gráficas')
+    st.radio("Seleccione el número de prefijos de las campañas a analizar:",[2, 3], index=1)
+    st.write(df_mitec_final_2)
 
 #------------------------------------------------------------------------------------------------#
 #------- Correos de HubSpot ----------
