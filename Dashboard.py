@@ -51,8 +51,9 @@ if option_selected == "Campañas e iniciativas":
     st.title("Indicadores de rendimiento de campañas: MiTec y HubSpot")
     st.write("---")
 
-    st.markdown('### Análisis general de camapañas e iniciativas')
+    st.markdown('### Análisis general de campañas e iniciativas')
     st.write("---")
+    st.markdown('En la siguiente tabla se puede visualizar las campañas registradas, teniendo en consideración la nomenclatura de los prefijos para identificar la vicepresidencia, los pilares del modelos work@tec y las diferentes vicepresidencias, así como también el número de iniciativas que conforman cada campaña.')
 
     campañas_general = df_campañas.groupby(["1er prefijo (TyE)","2do prefijo (pilar)","3er prefijo (area o VP)"])["3er prefijo (area o VP)"].count().to_dict()
     df_campañas_general = pd.DataFrame([key for key in campañas_general.keys()], columns=["1er prefijo (TyE)","2do prefijo (pilar)","3er prefijo (area o VP)"])
@@ -61,7 +62,8 @@ if option_selected == "Campañas e iniciativas":
     st.dataframe(df_campañas_general)
     
     st.markdown('### Visualización de iniciativas por campaña')
-
+    st.markdown('Con la campaña seleccionada a través de los filtros, podrá visualizar las inciativas que conforman cada una de ellas.')
+    st.write("---")
     # LISTA DESPLEGABLES
     filtro1, filtro2, filtro3 = st.columns(3)
 
@@ -81,7 +83,6 @@ if option_selected == "Campañas e iniciativas":
     TercerPrefijo = filtro3.selectbox("3er prefijo:", TercerPrefijo_options, 0)
 
     st.write("---")
-
     df_iniciativas = df_3[df_3["3er prefijo (area o VP)"] == TercerPrefijo]
     df_iniciativas = df_iniciativas.reset_index(drop=True)
     df_iniciativas = df_iniciativas[["1er prefijo (TyE)", "2do prefijo (pilar)", "3er prefijo (area o VP)", "Nombre de campaña","Iniciativa"]]
@@ -149,8 +150,49 @@ elif option_selected == "MiTEC":
 
     # Construcción del gráfico de Sankey
     st.markdown('### Gráficas')
-    st.radio("Seleccione el número de prefijos de las campañas a analizar:",[2, 3], index=1)
-    st.write(df_mitec_final_2)
+    num_prefijos = st.radio("Seleccione el número de prefijos de las campañas a analizar:",[2, 3], index=1)
+
+    if num_prefijos == 3:
+        df_mitec_2["1er prefijo_aux"] = df_mitec_2['1er prefijo (TyE)'] + "_" + df_mitec_2['2do prefijo (pilar)']
+        
+        # LISTA DESPLEGABLES
+        #filtro1_mitec = st.columns(1)
+
+        # Filtro 1
+        df_mitec_2_final = df_mitec_2.copy()
+        PrimerosPrefijos_options = df_mitec_2_final["1er prefijo_aux"].unique().tolist()
+        PrimerosPrefijos = st.selectbox("1er prefijo:", PrimerosPrefijos_options, 0)
+      
+        df_mitec_2_final = df_mitec_2_final[df_mitec_2_final["1er prefijo_aux"] == PrimerosPrefijos]
+        df_sank = df_mitec_2_final[["1er prefijo_aux", '3er prefijo (area o VP)', 'Iniciativa', "Número de clics"]]
+        df_sank["1er prefijo_aux"] = df_sank["1er prefijo_aux"].astype('category').cat.codes
+        df_sank["3er prefijo (area o VP)"] = df_sank["3er prefijo (area o VP)"].astype('category').cat.codes
+        df_sank["Iniciativa"] = df_sank["Iniciativa"].astype('category').cat.codes
+        num_primerprefijo = list(df_sank["1er prefijo_aux"].unique())
+        tipo_primerprefijo = list(df_mitec_2_final["1er prefijo_aux"].unique())
+        num_tercerprefijo = list(df_sank["3er prefijo (area o VP)"].unique())
+        tipo_tercerprefijo = list(df_mitec_2_final["3er prefijo (area o VP)"].unique())
+        num_iniciativa = list(df_sank["Iniciativa"].unique())
+        tipo_iniciativa = list(df_mitec_2_final["Iniciativa"].unique())
+        primerprefijo_dim = go.parcats.Dimension(values = df_sank["1er prefijo_aux"], label = 'Primer prefijo', 
+                                                categoryarray = num_primerprefijo, ticktext = tipo_primerprefijo)
+        tercerprefijo_dim = go.parcats.Dimension(values = df_sank["3er prefijo (area o VP)"], label = 'Tercer prefijo', 
+                                                categoryarray = num_tercerprefijo, ticktext = tipo_tercerprefijo)
+        iniciativa_dim = go.parcats.Dimension(values = df_sank["Iniciativa"], label = 'Iniciativa', 
+                                                categoryarray = num_iniciativa, ticktext = tipo_iniciativa)
+        color = df_sank["Número de clics"]
+        fig5 = go.Figure(data = [go.Parcats(dimensions = [primerprefijo_dim, tercerprefijo_dim, iniciativa_dim],
+                counts = df_sank["Número de clics"],
+                line={'color': color,'colorscale':'pinkyl'},
+                labelfont={'size': 15, 'family': 'Arial', 'color': '#F33A6A'},
+                tickfont={'size': 12, 'family': 'Arial', 'color': '#F33A6A'},
+                arrangement='freeform')
+                ])
+        colores = ['#000000', '#FFFFFF']
+        fuentes = ['Arial']
+        fig5.update_layout(paper_bgcolor = colores[1], #Color del background,
+                        hoverlabel_font_family = fuentes[0], hoverlabel_font_size = 15,)
+        st.write(fig5)
 
 #------------------------------------------------------------------------------------------------#
 #------- Correos de HubSpot ----------
