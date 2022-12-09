@@ -20,5 +20,7 @@
 		1. Borrar carpeta ".git":
 		En la terminal de bash, codificar "rm -rf .git"
 
+		2. Ubicarse correctamente en la carpeta:
+
 		
 		
