@@ -154,6 +154,48 @@ elif option_selected == "MiTEC":
     # st.markdown('### Gráficas')
     # num_prefijos = st.radio("Seleccione el número de prefijos de las campañas a analizar:",[2, 3], index=1)
 
+    # if num_prefijos == 3:
+    #     df_mitec_2["1er prefijo_aux"] = df_mitec_2['1er prefijo (TyE)'] + "_" + df_mitec_2['2do prefijo (pilar)']
+        
+    #     # LISTA DESPLEGABLES
+    #     #filtro1_mitec = st.columns(1)
+
+    #     # Filtro 1
+    #     df_mitec_2_final = df_mitec_2.copy()
+    #     PrimerosPrefijos_options = df_mitec_2_final["1er prefijo_aux"].unique().tolist()
+    #     PrimerosPrefijos = st.selectbox("1er prefijo:", PrimerosPrefijos_options, 0)
+      
+    #     df_mitec_2_final = df_mitec_2_final[df_mitec_2_final["1er prefijo_aux"] == PrimerosPrefijos]
+    #     df_sank = df_mitec_2_final[["1er prefijo_aux", '3er prefijo (area o VP)', 'Iniciativa', "Número de clics"]]
+    #     df_sank["1er prefijo_aux"] = df_sank["1er prefijo_aux"].astype('category').cat.codes
+    #     df_sank["3er prefijo (area o VP)"] = df_sank["3er prefijo (area o VP)"].astype('category').cat.codes
+    #     df_sank["Iniciativa"] = df_sank["Iniciativa"].astype('category').cat.codes
+    #     num_primerprefijo = list(df_sank["1er prefijo_aux"].unique())
+    #     tipo_primerprefijo = list(df_mitec_2_final["1er prefijo_aux"].unique())
+    #     num_tercerprefijo = list(df_sank["3er prefijo (area o VP)"].unique())
+    #     tipo_tercerprefijo = list(df_mitec_2_final["3er prefijo (area o VP)"].unique())
+    #     num_iniciativa = list(df_sank["Iniciativa"].unique())
+    #     tipo_iniciativa = list(df_mitec_2_final["Iniciativa"].unique())
+    #     primerprefijo_dim = go.parcats.Dimension(values = df_sank["1er prefijo_aux"], label = 'Primer prefijo', 
+    #                                             categoryarray = num_primerprefijo, ticktext = tipo_primerprefijo)
+    #     tercerprefijo_dim = go.parcats.Dimension(values = df_sank["3er prefijo (area o VP)"], label = 'Tercer prefijo', 
+    #                                             categoryarray = num_tercerprefijo, ticktext = tipo_tercerprefijo)
+    #     iniciativa_dim = go.parcats.Dimension(values = df_sank["Iniciativa"], label = 'Iniciativa', 
+    #                                             categoryarray = num_iniciativa, ticktext = tipo_iniciativa)
+    #     color = df_sank["Número de clics"]
+    #     fig5 = go.Figure(data = [go.Parcats(dimensions = [primerprefijo_dim, tercerprefijo_dim, iniciativa_dim],
+    #             counts = df_sank["Número de clics"],
+    #             line={'color': color,'colorscale':'pinkyl'},
+    #             labelfont={'size': 15, 'family': 'Arial', 'color': '#F33A6A'},
+    #             tickfont={'size': 12, 'family': 'Arial', 'color': '#F33A6A'},
+    #             arrangement='freeform')
+    #             ])
+    #     colores = ['#000000', '#FFFFFF']
+    #     fuentes = ['Arial']
+    #     fig5.update_layout(paper_bgcolor = colores[1], #Color del background,
+    #                     hoverlabel_font_family = fuentes[0], hoverlabel_font_size = 15,)
+    #     st.write(fig5)
+
 #------------------------------------------------------------------------------------------------#
 #------- Correos de HubSpot ----------
 elif option_selected == "Correos de HubSpot":
@@ -187,18 +229,17 @@ elif option_selected == "Correos de HubSpot":
         df_correos_2 = df_correos_final.copy()
     else:
         df_correos_2 = df_correos_final[df_correos_final["Mes"].isin(months_selected)]
-
-    # Análisis general por mes
-    st.markdown('### Análisis general por mes')
+    # Análisis por iniciativa y mes
+    st.markdown('### Análisis por iniciativas y mes')
     with st.expander("Ver análisis"):
-        df_correos = df_correos[df_correos["Enviado"] != "-"]
-        correos_analisis_mes = df_correos.groupby(["Mes"], as_index=False)["Enviado","Entregado","Tasa de entregas","Abierto","Tasa de aperturas",
+        df_correos_2 = df_correos_2[df_correos_2["Enviado"] != "-"]
+        correos_analisis_iniciativa_mes = df_correos_2.groupby(['1er prefijo (TyE)','2do prefijo (pilar)','3er prefijo (area o VP)','Nombre de campaña',"Iniciativa","Mes"], as_index=False)["Enviado","Entregado","Tasa de entregas","Abierto","Tasa de aperturas",
                         "Recibió clics","Tasa de clics","Tasa de click-through"].mean()
-        list_metrics_2 = ["Mes"]
+        list_metrics = ['1er prefijo (TyE)','2do prefijo (pilar)','3er prefijo (area o VP)','Nombre de campaña',"Iniciativa","Mes"]
         for i in range(len(metrics_selected)):
-            list_metrics_2.append(metrics_selected[i])
-        correos_analisis_mes = correos_analisis_mes[list_metrics_2]
-        st.dataframe(correos_analisis_mes)
+            list_metrics.append(metrics_selected[i])
+        correos_analisis_iniciativa_mes = correos_analisis_iniciativa_mes[list_metrics]
+        st.dataframe(correos_analisis_iniciativa_mes)
 
     # Análisis por campaña y mes
     st.markdown('### Análisis por campaña y mes')
@@ -213,16 +254,16 @@ elif option_selected == "Correos de HubSpot":
         st.dataframe(correos_analisis_iniciativa_mes)
 
     # Análisis por iniciativa y mes
-    st.markdown('### Análisis por iniciativas y mes')
+    st.markdown('### Análisis general por mes')
     with st.expander("Ver análisis"):
-        df_correos_2 = df_correos_2[df_correos_2["Enviado"] != "-"]
-        correos_analisis_iniciativa_mes = df_correos_2.groupby(['1er prefijo (TyE)','2do prefijo (pilar)','3er prefijo (area o VP)','Nombre de campaña',"Iniciativa","Mes"], as_index=False)["Enviado","Entregado","Tasa de entregas","Abierto","Tasa de aperturas",
+        df_correos = df_correos[df_correos["Enviado"] != "-"]
+        correos_analisis_mes = df_correos.groupby(["Mes"], as_index=False)["Enviado","Entregado","Tasa de entregas","Abierto","Tasa de aperturas",
                         "Recibió clics","Tasa de clics","Tasa de click-through"].mean()
-        list_metrics = ['1er prefijo (TyE)','2do prefijo (pilar)','3er prefijo (area o VP)','Nombre de campaña',"Iniciativa","Mes"]
+        list_metrics_2 = ["Mes"]
         for i in range(len(metrics_selected)):
-            list_metrics.append(metrics_selected[i])
-        correos_analisis_iniciativa_mes = correos_analisis_iniciativa_mes[list_metrics]
-        st.dataframe(correos_analisis_iniciativa_mes)
+            list_metrics_2.append(metrics_selected[i])
+        correos_analisis_mes = correos_analisis_mes[list_metrics_2]
+        st.dataframe(correos_analisis_mes)
 
 #------------------------------------------------------------------------------------------------#
 #------- Gráficos ----------
@@ -233,25 +274,6 @@ elif option_selected == "Análisis comparativo":
     st.title("Gráficos")
     st.write("---")
 
-    ### Gráfico para el análisis de MiTec
-    df_campañas["2do prefijo (pilar)"].fillna('-', inplace = True)
-    df_mitec_final = pd.merge(df_mitec,df_campañas, how = "left")
-    df_mitec_nulos = df_mitec_final.isnull().sum(axis=1)
-    df_mitec_final["Estatus"] = ["No encontrado" if num_nulos>2 else "Encontrado" for num_nulos in df_mitec_nulos]
-    df_mitec_final = df_mitec_final[['1er prefijo (TyE)',
-        '2do prefijo (pilar)', '3er prefijo (area o VP)','Nombre de campaña','Iniciativa','Estatus',
-        'Mes [Fecha]','Número de clics']]
-    
-    mitec_analisis_mes = df_mitec.groupby(["Mes [Fecha]"], as_index=False)["Número de clics"].mean()
-    mitec_analisis_mes.rename(columns = {"Número de clics":"Número de clics promedio mensual"}, inplace=True)
-    mitec_analisis_mes["Número de clics promedio diario"] = mitec_analisis_mes["Número de clics promedio mensual"]/30
-    mitec_analisis_mes = mitec_analisis_mes.sort_values(by=["Mes [Fecha]"], ascending=True).reset_index(drop=True)
-
-    fig = go.Figure([go.Scatter(x=mitec_analisis_mes['Mes [Fecha]'], y=mitec_analisis_mes['Número de clics promedio mensual'])])
-    st.markdown('### Número de clicks a través del tiempo')
-    st.write(fig)
-
-    ### Gráfico para el análisis de los correos de Hubspot
     df_campañas["2do prefijo (pilar)"].fillna('-', inplace = True)
     df_mitec_final = pd.merge(df_mitec,df_campañas, how = "left")
     df_mitec_nulos = df_mitec_final.isnull().sum(axis=1)
