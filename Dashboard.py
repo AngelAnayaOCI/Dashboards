@@ -360,7 +360,7 @@ elif option_selected == "Análisis comparativo":
     fig.update_layout(
         xaxis_title="Mes",
         yaxis_title="Total de clics recibidos",
-        font=dict(family="Courier New, monospace",size=12,color="White"))
+        font=dict(family="Courier New, monospace",size=12,color="Black"))
     st.write(fig)
 
     ### Gráfico para el análisis de los correos de Hubspot
@@ -396,5 +396,5 @@ elif option_selected == "Análisis comparativo":
     fig2.update_layout(
         xaxis_title="Mes",
         yaxis_title="Promedio de " + metric_selected,
-        font=dict(family="Courier New, monospace",size=12,color="White"))
+        font=dict(family="Courier New, monospace",size=12,color="Black"))
     st.write(fig2)
