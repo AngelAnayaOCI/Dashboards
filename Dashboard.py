@@ -32,7 +32,7 @@ st.markdown(hide_st_style, unsafe_allow_html=True)
 #------- Navigation Menu ----------
 option_selected = option_menu(
 	menu_title=None,
-	options=["Campañas e iniciativas", "MiTEC", "Correos de HubSpot", "Análisis comparativo"],
+	options=["Campañas e iniciativas", "MiTEC", "Correos de HubSpot"],
     orientation="horizontal"
 )
 #------------------------------------------------------------------------------------------------#
@@ -211,6 +211,106 @@ elif option_selected == "MiTEC":
         df_refuerzos = df_refuerzos[["MITEC", "Número de clics"]]
         st.dataframe(df_refuerzos)
 
+
+    st.title("Gráficos")
+    st.write("---")
+
+    #-------------------------------------------------------------------------------------
+    ### Gráfico para el análisis de MiTec
+    #st.markdown("## Análisis de MiTEC")
+    #st.markdown('')
+    tipo_analisis_mitec = st.radio("Seleccione el nivel de análisis que desea visualizar en los gráficos:",
+                                ('Nivel campaña', 'Nivel iniciativa'), key = "Mitec", index = 0)
+    st.markdown('')
+    df_campañas["2do prefijo (pilar)"].fillna('-', inplace = True)
+    df_mitec_final = pd.merge(df_mitec,df_campañas, on = "Iniciativa", how = "left")
+    df_mitec_nulos = df_mitec_final.isnull().sum(axis=1)
+    df_mitec_final["Estatus"] = ["No encontrado" if num_nulos>2 else "Encontrado" for num_nulos in df_mitec_nulos]
+    df_mitec_final = df_mitec_final[['1er prefijo (TyE)',
+            '2do prefijo (pilar)', '3er prefijo (area o VP)','Nombre de campaña','Iniciativa','Estatus','Mes',
+            'Mes [Fecha]','Número de clics']]
+    
+    if tipo_analisis_mitec == "Nivel campaña":
+        st.markdown('#### Número de clicks recibidos por campaña a través del tiempo')
+        st.markdown('<div style="text-align: justify;">En el siguiente gráfico podrá visualizar el impacto que han tenido las recursos publicados en Mitec por campaña a través del tiempo.</div>', unsafe_allow_html=True)
+        st.markdown('')
+    
+        # LISTA DESPLEGABLES || MITEC
+        filtro1_mitec_1, filtro2_mitec_1, filtro3_mitec_1 = st.columns(3)
+        # Filtro 1
+        df_1_mitec_1 = df_mitec_final.copy()
+        PrimerPrefijo_mitec_options_1 = df_1_mitec_1["1er prefijo (TyE)"].unique().tolist()
+        PrimerPrefijo_mitec_1 = filtro1_mitec_1.selectbox("1er prefijo:", PrimerPrefijo_mitec_options_1, 0, key = "Mitec_campaña_1")
+        # Filtro 2
+        df_2_mitec_1 = df_1_mitec_1[df_1_mitec_1["1er prefijo (TyE)"] == PrimerPrefijo_mitec_1]
+        SegundoPrefijo_mitec_options_1 = df_2_mitec_1["2do prefijo (pilar)"].unique().tolist()
+        SegundoPrefijo_mitec_1 = filtro2_mitec_1.selectbox("2do prefijo:", SegundoPrefijo_mitec_options_1, 0, key = "Mitec_campaña_2")
+        # Filtro 3
+        df_3_mitec_1 = df_2_mitec_1[df_2_mitec_1["2do prefijo (pilar)"] == SegundoPrefijo_mitec_1]
+        TercerPrefijo_mitec_options_1 = df_3_mitec_1["3er prefijo (area o VP)"].unique().tolist()
+        TercerPrefijo_mitec_1 = filtro3_mitec_1.selectbox("3er prefijo:", TercerPrefijo_mitec_options_1, 0, key = "Mitec_campaña_3")
+        st.write("---")
+        df_mitec_campañas_final_1 = df_3_mitec_1[df_3_mitec_1["3er prefijo (area o VP)"] == TercerPrefijo_mitec_1]
+
+        mitec_analisis_mes_1 = df_mitec_campañas_final_1.groupby(["Mes","Mes [Fecha]"], as_index=False)["Número de clics"].sum()
+        mitec_analisis_mes_1.rename(columns = {"Número de clics":"Total de clics recibidos"}, inplace=True)
+        mitec_analisis_mes_1 = mitec_analisis_mes_1.sort_values(by=["Mes [Fecha]"], ascending=True).reset_index(drop=True)
+
+        fig_mitec_1 = go.Figure([go.Scatter(x=mitec_analisis_mes_1['Mes'], y=mitec_analisis_mes_1['Total de clics recibidos'])])
+        fig_mitec_1.update_layout(
+            xaxis_title="Mes",
+            yaxis_title="Total de clics recibidos",
+            font=dict(family="Courier New, monospace",size=12,color="Black"))
+        
+        left_column_mitec_1, right_column_mitec_1 = st.columns([1, 3])
+        with left_column_mitec_1:
+            st.write(mitec_analisis_mes_1[['Mes','Total de clics recibidos']])
+        with right_column_mitec_1:
+            st.write(fig_mitec_1)
+    else:
+        st.markdown('#### Número de clicks recibidos por iniciativa a través del tiempo')
+        st.markdown('<div style="text-align: justify;">En el siguiente gráfico podrá visualizar el impacto que han tenido las recursos publicados en Mitec por iniciativa a través del tiempo.</div>', unsafe_allow_html=True)
+        st.markdown('')
+    
+        # LISTA DESPLEGABLES || MITEC
+        filtro1_mitec_2, filtro2_mitec_2, filtro3_mitec_2, filtro4_mitec_2 = st.columns(4)
+        # Filtro 1
+        df_1_mitec_2 = df_mitec_final.copy()
+        PrimerPrefijo_mitec_options_2 = df_1_mitec_2["1er prefijo (TyE)"].unique().tolist()
+        PrimerPrefijo_mitec_2 = filtro1_mitec_2.selectbox("1er prefijo:", PrimerPrefijo_mitec_options_2, 0, key = "Mitec_iniciativa_1")
+        # Filtro 2
+        df_2_mitec_2 = df_1_mitec_2[df_1_mitec_2["1er prefijo (TyE)"] == PrimerPrefijo_mitec_2]
+        SegundoPrefijo_mitec_options_2 = df_2_mitec_2["2do prefijo (pilar)"].unique().tolist()
+        SegundoPrefijo_mitec_2 = filtro2_mitec_2.selectbox("2do prefijo:", SegundoPrefijo_mitec_options_2, 0, key = "Mitec_iniciativa_2")
+        # Filtro 3
+        df_3_mitec_2 = df_2_mitec_2[df_2_mitec_2["2do prefijo (pilar)"] == SegundoPrefijo_mitec_2]
+        TercerPrefijo_mitec_options_2 = df_3_mitec_2["3er prefijo (area o VP)"].unique().tolist()
+        TercerPrefijo_mitec_2 = filtro3_mitec_2.selectbox("3er prefijo:", TercerPrefijo_mitec_options_2, 0, key = "Mitec_iniciativa_3")
+        # Filtro 4
+        df_4_mitec_2 = df_3_mitec_2[df_3_mitec_2["3er prefijo (area o VP)"] == TercerPrefijo_mitec_2]
+        Iniciativa_mitec_options_2 = df_4_mitec_2["Iniciativa"].unique().tolist()
+        Iniciativa_mitec_2 = filtro4_mitec_2.selectbox("Iniciativa:", Iniciativa_mitec_options_2, 0, key = "Mitec_iniciativa_4")
+        
+        st.write("---")
+        df_mitec_campañas_final_2 = df_4_mitec_2[df_4_mitec_2["Iniciativa"] == Iniciativa_mitec_2]
+
+        mitec_analisis_mes_2 = df_mitec_campañas_final_2.groupby(["Mes","Mes [Fecha]"], as_index=False)["Número de clics"].sum()
+        mitec_analisis_mes_2.rename(columns = {"Número de clics":"Total de clics recibidos"}, inplace=True)
+        mitec_analisis_mes_2 = mitec_analisis_mes_2.sort_values(by=["Mes [Fecha]"], ascending=True).reset_index(drop=True)
+
+        fig_mitec_2 = go.Figure([go.Scatter(x=mitec_analisis_mes_2['Mes'], y=mitec_analisis_mes_2['Total de clics recibidos'])])
+        fig_mitec_2.update_layout(
+            xaxis_title="Mes",
+            yaxis_title="Total de clics recibidos",
+            font=dict(family="Courier New, monospace",size=12,color="Black"))
+        
+        left_column_mitec_2, right_column_mitec_2 = st.columns([1, 3])
+        with left_column_mitec_2:
+            st.write(mitec_analisis_mes_2[['Mes','Total de clics recibidos']])
+        with right_column_mitec_2:
+            st.write(fig_mitec_2)
+
+
 #------------------------------------------------------------------------------------------------#
 #------- Correos de HubSpot ----------
 elif option_selected == "Correos de HubSpot":
@@ -311,116 +411,12 @@ elif option_selected == "Correos de HubSpot":
         #--------------------------------------------------------------------------------
         st.dataframe(correos_analisis_iniciativa_mes)
 
-#------------------------------------------------------------------------------------------------#
-#------- Gráficos ----------
-elif option_selected == "Análisis comparativo":
-
-    sidebar.header('Dashboard \n `Visualización de los datos`')
-
-    st.title("Gráficos")
-    st.write("---")
-
-    #-------------------------------------------------------------------------------------
-    ### Gráfico para el análisis de MiTec
-    st.markdown("## Análisis de MiTEC")
-    st.markdown('')
-    tipo_analisis_mitec = st.radio("Seleccione el nivel de análisis que desea visualizar en los gráficos:",
-                                ('Nivel campaña', 'Nivel iniciativa'), key = "Mitec", index = 0)
-    st.markdown('')
-    df_campañas["2do prefijo (pilar)"].fillna('-', inplace = True)
-    df_mitec_final = pd.merge(df_mitec,df_campañas, on = "Iniciativa", how = "left")
-    df_mitec_nulos = df_mitec_final.isnull().sum(axis=1)
-    df_mitec_final["Estatus"] = ["No encontrado" if num_nulos>2 else "Encontrado" for num_nulos in df_mitec_nulos]
-    df_mitec_final = df_mitec_final[['1er prefijo (TyE)',
-            '2do prefijo (pilar)', '3er prefijo (area o VP)','Nombre de campaña','Iniciativa','Estatus','Mes',
-            'Mes [Fecha]','Número de clics']]
-    
-    if tipo_analisis_mitec == "Nivel campaña":
-        st.markdown('#### Número de clicks recibidos por campaña a través del tiempo')
-        st.markdown('<div style="text-align: justify;">En el siguiente gráfico podrá visualizar el impacto que han tenido las recursos publicados en Mitec por campaña a través del tiempo.</div>', unsafe_allow_html=True)
-        st.markdown('')
-    
-        # LISTA DESPLEGABLES || MITEC
-        filtro1_mitec_1, filtro2_mitec_1, filtro3_mitec_1 = st.columns(3)
-        # Filtro 1
-        df_1_mitec_1 = df_mitec_final.copy()
-        PrimerPrefijo_mitec_options_1 = df_1_mitec_1["1er prefijo (TyE)"].unique().tolist()
-        PrimerPrefijo_mitec_1 = filtro1_mitec_1.selectbox("1er prefijo:", PrimerPrefijo_mitec_options_1, 0, key = "Mitec_campaña_1")
-        # Filtro 2
-        df_2_mitec_1 = df_1_mitec_1[df_1_mitec_1["1er prefijo (TyE)"] == PrimerPrefijo_mitec_1]
-        SegundoPrefijo_mitec_options_1 = df_2_mitec_1["2do prefijo (pilar)"].unique().tolist()
-        SegundoPrefijo_mitec_1 = filtro2_mitec_1.selectbox("2do prefijo:", SegundoPrefijo_mitec_options_1, 0, key = "Mitec_campaña_2")
-        # Filtro 3
-        df_3_mitec_1 = df_2_mitec_1[df_2_mitec_1["2do prefijo (pilar)"] == SegundoPrefijo_mitec_1]
-        TercerPrefijo_mitec_options_1 = df_3_mitec_1["3er prefijo (area o VP)"].unique().tolist()
-        TercerPrefijo_mitec_1 = filtro3_mitec_1.selectbox("3er prefijo:", TercerPrefijo_mitec_options_1, 0, key = "Mitec_campaña_3")
-        st.write("---")
-        df_mitec_campañas_final_1 = df_3_mitec_1[df_3_mitec_1["3er prefijo (area o VP)"] == TercerPrefijo_mitec_1]
-
-        mitec_analisis_mes_1 = df_mitec_campañas_final_1.groupby(["Mes","Mes [Fecha]"], as_index=False)["Número de clics"].sum()
-        mitec_analisis_mes_1.rename(columns = {"Número de clics":"Total de clics recibidos"}, inplace=True)
-        mitec_analisis_mes_1 = mitec_analisis_mes_1.sort_values(by=["Mes [Fecha]"], ascending=True).reset_index(drop=True)
-
-        fig_mitec_1 = go.Figure([go.Scatter(x=mitec_analisis_mes_1['Mes'], y=mitec_analisis_mes_1['Total de clics recibidos'])])
-        fig_mitec_1.update_layout(
-            xaxis_title="Mes",
-            yaxis_title="Total de clics recibidos",
-            font=dict(family="Courier New, monospace",size=12,color="Black"))
-        
-        left_column_mitec_1, right_column_mitec_1 = st.columns([1, 3])
-        with left_column_mitec_1:
-            st.write(mitec_analisis_mes_1[['Mes','Total de clics recibidos']])
-        with right_column_mitec_1:
-            st.write(fig_mitec_1)
-    else:
-        st.markdown('#### Número de clicks recibidos por iniciativa a través del tiempo')
-        st.markdown('<div style="text-align: justify;">En el siguiente gráfico podrá visualizar el impacto que han tenido las recursos publicados en Mitec por iniciativa a través del tiempo.</div>', unsafe_allow_html=True)
-        st.markdown('')
-    
-        # LISTA DESPLEGABLES || MITEC
-        filtro1_mitec_2, filtro2_mitec_2, filtro3_mitec_2, filtro4_mitec_2 = st.columns(4)
-        # Filtro 1
-        df_1_mitec_2 = df_mitec_final.copy()
-        PrimerPrefijo_mitec_options_2 = df_1_mitec_2["1er prefijo (TyE)"].unique().tolist()
-        PrimerPrefijo_mitec_2 = filtro1_mitec_2.selectbox("1er prefijo:", PrimerPrefijo_mitec_options_2, 0, key = "Mitec_iniciativa_1")
-        # Filtro 2
-        df_2_mitec_2 = df_1_mitec_2[df_1_mitec_2["1er prefijo (TyE)"] == PrimerPrefijo_mitec_2]
-        SegundoPrefijo_mitec_options_2 = df_2_mitec_2["2do prefijo (pilar)"].unique().tolist()
-        SegundoPrefijo_mitec_2 = filtro2_mitec_2.selectbox("2do prefijo:", SegundoPrefijo_mitec_options_2, 0, key = "Mitec_iniciativa_2")
-        # Filtro 3
-        df_3_mitec_2 = df_2_mitec_2[df_2_mitec_2["2do prefijo (pilar)"] == SegundoPrefijo_mitec_2]
-        TercerPrefijo_mitec_options_2 = df_3_mitec_2["3er prefijo (area o VP)"].unique().tolist()
-        TercerPrefijo_mitec_2 = filtro3_mitec_2.selectbox("3er prefijo:", TercerPrefijo_mitec_options_2, 0, key = "Mitec_iniciativa_3")
-        # Filtro 4
-        df_4_mitec_2 = df_3_mitec_2[df_3_mitec_2["3er prefijo (area o VP)"] == TercerPrefijo_mitec_2]
-        Iniciativa_mitec_options_2 = df_4_mitec_2["Iniciativa"].unique().tolist()
-        Iniciativa_mitec_2 = filtro4_mitec_2.selectbox("Iniciativa:", Iniciativa_mitec_options_2, 0, key = "Mitec_iniciativa_4")
-        
-        st.write("---")
-        df_mitec_campañas_final_2 = df_4_mitec_2[df_4_mitec_2["Iniciativa"] == Iniciativa_mitec_2]
-
-        mitec_analisis_mes_2 = df_mitec_campañas_final_2.groupby(["Mes","Mes [Fecha]"], as_index=False)["Número de clics"].sum()
-        mitec_analisis_mes_2.rename(columns = {"Número de clics":"Total de clics recibidos"}, inplace=True)
-        mitec_analisis_mes_2 = mitec_analisis_mes_2.sort_values(by=["Mes [Fecha]"], ascending=True).reset_index(drop=True)
-
-        fig_mitec_2 = go.Figure([go.Scatter(x=mitec_analisis_mes_2['Mes'], y=mitec_analisis_mes_2['Total de clics recibidos'])])
-        fig_mitec_2.update_layout(
-            xaxis_title="Mes",
-            yaxis_title="Total de clics recibidos",
-            font=dict(family="Courier New, monospace",size=12,color="Black"))
-        
-        left_column_mitec_2, right_column_mitec_2 = st.columns([1, 3])
-        with left_column_mitec_2:
-            st.write(mitec_analisis_mes_2[['Mes','Total de clics recibidos']])
-        with right_column_mitec_2:
-            st.write(fig_mitec_2)
-
     #-------------------------------------------------------------------------------------
     ### Gráfico para el análisis de los correos de Hubspot
-    st.markdown("## Análisis de correos de HubSpot")
-    st.markdown('')
+    st.markdown("## Gráficos")
+    st.markdown('----------------------')
     tipo_analisis_correos = st.radio("Seleccione el nivel de análisis que desea visualizar en los gráficos:",
-                                ('Nivel campaña', 'Nivel iniciativa'), key = "Correos", index = 0)
+                                ('Nivel general','Nivel campaña', 'Nivel iniciativa'), key = "Correos", index = 0)
     st.markdown('')
     df_campañas["2do prefijo (pilar)"].fillna('-', inplace = True)
     df_correos_final = pd.merge(df_correos,df_campañas, on = "Iniciativa", how = "left")
@@ -433,106 +429,131 @@ elif option_selected == "Análisis comparativo":
             'Tasa de aperturas', 'Recibió clics', 'Tasa de clics',
             'Tasa de click-through']]
     df_correos_final = df_correos_final[df_correos_final["Enviado"] != "-"]
+    
     metric_options_graphic = ["Enviado","Entregado","Tasa de entregas","Abierto","Tasa de aperturas",
                         "Recibió clics","Tasa de clics","Tasa de click-through"]
-    metric_selected_graphic = st.sidebar.selectbox("Métricas a analizar de los correos de HubSpot:", metric_options_graphic, 7)
+    metric_selected_graphic = st.selectbox("Métricas a analizar de los correos de HubSpot:", metric_options_graphic, 7)
     
-    if tipo_analisis_correos == 'Nivel campaña':
-        titulo_1 = str(metric_selected_graphic) + ' por campaña a través del tiempo'
-        st.markdown('### Total de '+ titulo_1)
-        st.markdown('<div style="text-align: justify;">En el siguiente gráfico podrá visualizar el impacto que han tenido los correos enviados por Hubspot para la campaña seleccionada a través del tiempo, considerando la métrica de su preferencia.</div>', unsafe_allow_html=True)
-        st.markdown('')
+    st.markdown('----------------------')
+    with st.expander("Ver gráficos"):
+        if tipo_analisis_correos == 'Nivel general':
+            titulo_1_0 = str(metric_selected_graphic) + ' por campaña a través del tiempo'
+            st.markdown('### Total de '+ titulo_1_0)
+            st.markdown('<div style="text-align: justify;">En el siguiente gráfico podrá visualizar el impacto que han tenido los correos enviados por Hubspot a través del tiempo, considerando la métrica de su preferencia.</div>', unsafe_allow_html=True)
+            st.markdown('')
 
-        # LISTA DESPLEGABLES
-        filtro1_correos_1, filtro2_correos_1, filtro3_correos_1 = st.columns(3)
-        # Filtro 1
-        df_1_correos_1 = df_correos_final.copy()
-        PrimerPrefijo_correos_options_1 = df_1_correos_1["1er prefijo (TyE)"].unique().tolist()
-        PrimerPrefijo_correos_1 = filtro1_correos_1.selectbox("1er prefijo:", PrimerPrefijo_correos_options_1, 0, key = "Correos_campañas_1")
-        # Filtro 2
-        df_2_correos_1 = df_1_correos_1[df_1_correos_1["1er prefijo (TyE)"] == PrimerPrefijo_correos_1]
-        SegundoPrefijo_correos_options_1 = df_2_correos_1["2do prefijo (pilar)"].unique().tolist()
-        SegundoPrefijo_correos_1 = filtro2_correos_1.selectbox("2do prefijo:", SegundoPrefijo_correos_options_1, 0, key = "Correos_campañas_2")
-        # Filtro 3
-        df_3_correos_1 = df_2_correos_1[df_2_correos_1["2do prefijo (pilar)"] == SegundoPrefijo_correos_1]
-        TercerPrefijo_correos_options_1 = df_3_correos_1["3er prefijo (area o VP)"].unique().tolist()
-        TercerPrefijo_correos_1 = filtro3_correos_1.selectbox("3er prefijo:", TercerPrefijo_correos_options_1, 0, key = "Correos_campañas_3")
-        st.write("---")
+            fig_correos_0 = go.Figure([go.Scatter(x = correos_analisis_mes['Mes'], 
+                                        y = correos_analisis_mes[metric_selected_graphic])])
+            fig_correos_0.update_layout(
+                xaxis_title="Mes",
+                yaxis_title="Promedio de " + metric_selected_graphic,
+                font=dict(family="Courier New, monospace",size=12,color="Black"))
+            
+            left_column_correos_0, right_column_correos_0 = st.columns([1, 3])
+            with left_column_correos_0:
+                list_with_metric_output_0 = ['Mes']
+                list_with_metric_output_0.append(metric_selected_graphic)
+                st.write(correos_analisis_mes[list_with_metric_output_0])
+            with right_column_correos_0:
+                st.write(fig_correos_0)
 
-        df_correos_final_otro_1 = df_3_correos_1[df_3_correos_1["3er prefijo (area o VP)"] == TercerPrefijo_correos_1]
-        correos_analisis_mes_1 = df_correos_final_otro_1.groupby(['Mes',"Mes [Fecha]"], as_index=False)[["Enviado","Entregado","Tasa de entregas","Abierto","Tasa de aperturas",
-                            "Recibió clics","Tasa de clics","Tasa de click-through"]].mean()
-        list_with_metric_1 = ['Mes',"Mes [Fecha]"]
-        list_with_metric_1.append(metric_selected_graphic)
-        #st.write(list_with_metric)
-        correos_analisis_mes_with_metric_1 = correos_analisis_mes_1[list_with_metric_1]
-        correos_analisis_mes_with_metric_1 = correos_analisis_mes_with_metric_1.sort_values(by=["Mes [Fecha]"], ascending=True).reset_index(drop=True)
+        elif tipo_analisis_correos == 'Nivel campaña':
+            titulo_1 = str(metric_selected_graphic) + ' por campaña a través del tiempo'
+            st.markdown('### Total de '+ titulo_1)
+            st.markdown('<div style="text-align: justify;">En el siguiente gráfico podrá visualizar el impacto que han tenido los correos enviados por Hubspot para la campaña seleccionada a través del tiempo, considerando la métrica de su preferencia.</div>', unsafe_allow_html=True)
+            st.markdown('')
 
-        
-        fig_correos_1 = go.Figure([go.Scatter(x = correos_analisis_mes_with_metric_1['Mes'], 
-                                    y = correos_analisis_mes_with_metric_1[metric_selected_graphic])])
-        fig_correos_1.update_layout(
-            xaxis_title="Mes",
-            yaxis_title="Promedio de " + metric_selected_graphic,
-            font=dict(family="Courier New, monospace",size=12,color="Black"))
-        
-        left_column_correos_1, right_column_correos_1 = st.columns([1, 3])
-        with left_column_correos_1:
-            list_with_metric_output_1 = ['Mes']
-            list_with_metric_output_1.append(metric_selected_graphic)
-            st.write(correos_analisis_mes_with_metric_1[list_with_metric_output_1])
-        with right_column_correos_1:
-            st.write(fig_correos_1)
-    else:
-        titulo_2 = str(metric_selected_graphic) + ' por iniciativa a través del tiempo'
-        st.markdown('### Total de '+ titulo_2)
-        st.markdown('<div style="text-align: justify;">En el siguiente gráfico podrá visualizar el impacto que han tenido los correos enviados por Hubspot para la iniciativa seleccionada a través del tiempo, considerando la métrica de su preferencia.</div>', unsafe_allow_html=True)
-        st.markdown('')
+            # LISTA DESPLEGABLES
+            filtro1_correos_1, filtro2_correos_1, filtro3_correos_1 = st.columns(3)
+            # Filtro 1
+            df_1_correos_1 = df_correos_final.copy()
+            PrimerPrefijo_correos_options_1 = df_1_correos_1["1er prefijo (TyE)"].unique().tolist()
+            PrimerPrefijo_correos_1 = filtro1_correos_1.selectbox("1er prefijo:", PrimerPrefijo_correos_options_1, 0, key = "Correos_campañas_1")
+            # Filtro 2
+            df_2_correos_1 = df_1_correos_1[df_1_correos_1["1er prefijo (TyE)"] == PrimerPrefijo_correos_1]
+            SegundoPrefijo_correos_options_1 = df_2_correos_1["2do prefijo (pilar)"].unique().tolist()
+            SegundoPrefijo_correos_1 = filtro2_correos_1.selectbox("2do prefijo:", SegundoPrefijo_correos_options_1, 0, key = "Correos_campañas_2")
+            # Filtro 3
+            df_3_correos_1 = df_2_correos_1[df_2_correos_1["2do prefijo (pilar)"] == SegundoPrefijo_correos_1]
+            TercerPrefijo_correos_options_1 = df_3_correos_1["3er prefijo (area o VP)"].unique().tolist()
+            TercerPrefijo_correos_1 = filtro3_correos_1.selectbox("3er prefijo:", TercerPrefijo_correos_options_1, 0, key = "Correos_campañas_3")
+            st.write("---")
 
-        # LISTA DESPLEGABLES
-        filtro1_correos_2, filtro2_correos_2, filtro3_correos_2, filtro4_correos_2 = st.columns(4)
-        # Filtro 1
-        df_1_correos_2 = df_correos_final.copy()
-        PrimerPrefijo_correos_options_2 = df_1_correos_2["1er prefijo (TyE)"].unique().tolist()
-        PrimerPrefijo_correos_2 = filtro1_correos_2.selectbox("1er prefijo:", PrimerPrefijo_correos_options_2, 0, key = "Correos_iniciativas_1")
-        # Filtro 2
-        df_2_correos_2 = df_1_correos_2[df_1_correos_2["1er prefijo (TyE)"] == PrimerPrefijo_correos_2]
-        SegundoPrefijo_correos_options_2 = df_2_correos_2["2do prefijo (pilar)"].unique().tolist()
-        SegundoPrefijo_correos_2 = filtro2_correos_2.selectbox("2do prefijo:", SegundoPrefijo_correos_options_2, 0, key = "Correos_iniciativas_2")
-        # Filtro 3
-        df_3_correos_2 = df_2_correos_2[df_2_correos_2["2do prefijo (pilar)"] == SegundoPrefijo_correos_2]
-        TercerPrefijo_correos_options_2 = df_3_correos_2["3er prefijo (area o VP)"].unique().tolist()
-        TercerPrefijo_correos_2 = filtro3_correos_2.selectbox("3er prefijo:", TercerPrefijo_correos_options_2, 0, key = "Correos_iniciativas_3")
-        # Filtro 4
-        df_4_correos_2 = df_3_correos_2[df_3_correos_2["3er prefijo (area o VP)"] == TercerPrefijo_correos_2]
-        Iniciativas_correos_options_2 = df_4_correos_2["Iniciativa"].unique().tolist()
-        Iniciativa_correos_2 = filtro4_correos_2.selectbox("Iniciativa:", Iniciativas_correos_options_2, 0, key = "Correos_iniciativas_4")
+            df_correos_final_otro_1 = df_3_correos_1[df_3_correos_1["3er prefijo (area o VP)"] == TercerPrefijo_correos_1]
+            correos_analisis_mes_1 = df_correos_final_otro_1.groupby(['Mes',"Mes [Fecha]"], as_index=False)[["Enviado","Entregado","Tasa de entregas","Abierto","Tasa de aperturas",
+                                "Recibió clics","Tasa de clics","Tasa de click-through"]].mean()
+            list_with_metric_1 = ['Mes',"Mes [Fecha]"]
+            list_with_metric_1.append(metric_selected_graphic)
+            #st.write(list_with_metric)
+            correos_analisis_mes_with_metric_1 = correos_analisis_mes_1[list_with_metric_1]
+            correos_analisis_mes_with_metric_1 = correos_analisis_mes_with_metric_1.sort_values(by=["Mes [Fecha]"], ascending=True).reset_index(drop=True)
 
-        st.write("---")
-        df_correos_final_otro_2 = df_4_correos_2[df_4_correos_2["Iniciativa"] == Iniciativa_correos_2]
-        correos_analisis_mes_2 = df_correos_final_otro_2.groupby(['Mes',"Mes [Fecha]"], as_index=False)[["Enviado","Entregado","Tasa de entregas","Abierto","Tasa de aperturas",
-                            "Recibió clics","Tasa de clics","Tasa de click-through"]].mean()
-        
-        list_with_metric_2 = ['Mes',"Mes [Fecha]"]
-        list_with_metric_2.append(metric_selected_graphic)
-        #st.write(correos_analisis_mes_2)
-        #st.write(correos_analisis_mes_2.columns)
-        #st.write(list_with_metric_2)
-        correos_analisis_mes_with_metric_2 = correos_analisis_mes_2[list_with_metric_2]
-        correos_analisis_mes_with_metric_2 = correos_analisis_mes_with_metric_2.sort_values(by=["Mes [Fecha]"], ascending=True).reset_index(drop=True)
+            
+            fig_correos_1 = go.Figure([go.Scatter(x = correos_analisis_mes_with_metric_1['Mes'], 
+                                        y = correos_analisis_mes_with_metric_1[metric_selected_graphic])])
+            fig_correos_1.update_layout(
+                xaxis_title="Mes",
+                yaxis_title="Promedio de " + metric_selected_graphic,
+                font=dict(family="Courier New, monospace",size=12,color="Black"))
+            
+            left_column_correos_1, right_column_correos_1 = st.columns([1, 3])
+            with left_column_correos_1:
+                list_with_metric_output_1 = ['Mes']
+                list_with_metric_output_1.append(metric_selected_graphic)
+                st.write(correos_analisis_mes_with_metric_1[list_with_metric_output_1])
+            with right_column_correos_1:
+                st.write(fig_correos_1)
+        else:
+            titulo_2 = str(metric_selected_graphic) + ' por iniciativa a través del tiempo'
+            st.markdown('### Total de '+ titulo_2)
+            st.markdown('<div style="text-align: justify;">En el siguiente gráfico podrá visualizar el impacto que han tenido los correos enviados por Hubspot para la iniciativa seleccionada a través del tiempo, considerando la métrica de su preferencia.</div>', unsafe_allow_html=True)
+            st.markdown('')
 
-        
-        fig_correos_2 = go.Figure([go.Scatter(x = correos_analisis_mes_with_metric_2['Mes'], 
-                                    y = correos_analisis_mes_with_metric_2[metric_selected_graphic])])
-        fig_correos_2.update_layout(
-            xaxis_title="Mes",
-            yaxis_title="Promedio de " + metric_selected_graphic,
-            font=dict(family="Courier New, monospace",size=12,color="Black"))
-        
-        left_column_correos_2, right_column_correos_2 = st.columns([1, 3])
-        with left_column_correos_2:
-            list_with_metric_output_2 = ['Mes']
-            list_with_metric_output_2.append(metric_selected_graphic)
-            st.write(correos_analisis_mes_with_metric_2[list_with_metric_output_2])
-        with right_column_correos_2:
-            st.write(fig_correos_2)
+            # LISTA DESPLEGABLES
+            filtro1_correos_2, filtro2_correos_2, filtro3_correos_2, filtro4_correos_2 = st.columns(4)
+            # Filtro 1
+            df_1_correos_2 = df_correos_final.copy()
+            PrimerPrefijo_correos_options_2 = df_1_correos_2["1er prefijo (TyE)"].unique().tolist()
+            PrimerPrefijo_correos_2 = filtro1_correos_2.selectbox("1er prefijo:", PrimerPrefijo_correos_options_2, 0, key = "Correos_iniciativas_1")
+            # Filtro 2
+            df_2_correos_2 = df_1_correos_2[df_1_correos_2["1er prefijo (TyE)"] == PrimerPrefijo_correos_2]
+            SegundoPrefijo_correos_options_2 = df_2_correos_2["2do prefijo (pilar)"].unique().tolist()
+            SegundoPrefijo_correos_2 = filtro2_correos_2.selectbox("2do prefijo:", SegundoPrefijo_correos_options_2, 0, key = "Correos_iniciativas_2")
+            # Filtro 3
+            df_3_correos_2 = df_2_correos_2[df_2_correos_2["2do prefijo (pilar)"] == SegundoPrefijo_correos_2]
+            TercerPrefijo_correos_options_2 = df_3_correos_2["3er prefijo (area o VP)"].unique().tolist()
+            TercerPrefijo_correos_2 = filtro3_correos_2.selectbox("3er prefijo:", TercerPrefijo_correos_options_2, 0, key = "Correos_iniciativas_3")
+            # Filtro 4
+            df_4_correos_2 = df_3_correos_2[df_3_correos_2["3er prefijo (area o VP)"] == TercerPrefijo_correos_2]
+            Iniciativas_correos_options_2 = df_4_correos_2["Iniciativa"].unique().tolist()
+            Iniciativa_correos_2 = filtro4_correos_2.selectbox("Iniciativa:", Iniciativas_correos_options_2, 0, key = "Correos_iniciativas_4")
+
+            st.write("---")
+            df_correos_final_otro_2 = df_4_correos_2[df_4_correos_2["Iniciativa"] == Iniciativa_correos_2]
+            correos_analisis_mes_2 = df_correos_final_otro_2.groupby(['Mes',"Mes [Fecha]"], as_index=False)[["Enviado","Entregado","Tasa de entregas","Abierto","Tasa de aperturas",
+                                "Recibió clics","Tasa de clics","Tasa de click-through"]].mean()
+            
+            list_with_metric_2 = ['Mes',"Mes [Fecha]"]
+            list_with_metric_2.append(metric_selected_graphic)
+
+            correos_analisis_mes_with_metric_2 = correos_analisis_mes_2[list_with_metric_2]
+            correos_analisis_mes_with_metric_2 = correos_analisis_mes_with_metric_2.sort_values(by=["Mes [Fecha]"], ascending=True).reset_index(drop=True)
+
+            
+            fig_correos_2 = go.Figure([go.Scatter(x = correos_analisis_mes_with_metric_2['Mes'], 
+                                        y = correos_analisis_mes_with_metric_2[metric_selected_graphic])])
+            fig_correos_2.update_layout(
+                xaxis_title="Mes",
+                yaxis_title="Promedio de " + metric_selected_graphic,
+                font=dict(family="Courier New, monospace",size=12,color="Black"))
+            
+            left_column_correos_2, right_column_correos_2 = st.columns([1, 3])
+            with left_column_correos_2:
+                list_with_metric_output_2 = ['Mes']
+                list_with_metric_output_2.append(metric_selected_graphic)
+                st.write(correos_analisis_mes_with_metric_2[list_with_metric_output_2])
+            with right_column_correos_2:
+                st.write(fig_correos_2)
+
+
+   
