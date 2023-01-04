@@ -126,13 +126,13 @@ elif option_selected == "MiTEC":
         st.markdown('<div style="text-align: justify;"><b>- Número de clics promedio por campaña.</b> Es una métrica que representa el promedio de clics que recibieron cada una de las campañas sobre las que se publicaron recursos en el carrusel de MiTec.</div>', unsafe_allow_html=True)
         st.markdown('')
         # Total de clics por mes
-        mitec_analisis_mes = df_mitec_final_1.groupby(["Mes [Fecha]", "Mes"], as_index=False)["Número de clics"].sum()
+        mitec_analisis_mes = df_mitec_2.groupby(["Mes [Fecha]", "Mes"], as_index=False)["Número de clics"].sum()
         mitec_analisis_mes.rename(columns = {"Número de clics":"Total de clics al mes"}, inplace=True)
 
         # Número de campañas por mes
         numero_campañas = []
         for mes in mitec_analisis_mes["Mes"]:
-            numero_campañas.append(len(df_mitec_final_1['Nombre de campaña'][df_mitec_final_1["Mes"] == mes].unique()))
+            numero_campañas.append(len(df_mitec_2['Nombre de campaña'][df_mitec_2["Mes"] == mes].unique()))
         mitec_analisis_mes["Total de campañas al mes"] = numero_campañas
         
         # Número de clics promedio por campaña
@@ -150,20 +150,37 @@ elif option_selected == "MiTEC":
     
     #*****************************************************************************************#
     # Análisis por campaña y mes
+    # SUMA TOTAL
     st.markdown('### Análisis por campaña y mes')
     with st.expander("Ver análisis"):
         st.markdown('<div style="text-align: justify;">El presente análisis muestra un análisis sobre el número de clics recibidos por campaña, en los meses seleccionados.</div>', unsafe_allow_html=True)
         st.markdown('')
+
+        # Total de clics por campaña y mes
         mitec_analisis_campaña_mes = df_mitec_2.groupby(['Nombre de campaña',"Mes [Fecha]","Mes"], as_index=False)["Número de clics"].sum()
         mitec_analisis_campaña_mes.rename(columns = {"Número de clics":"Total de clics mensuales por campaña"}, inplace=True)
         #mitec_analisis_campaña_mes["Número de clics promedio diario"] = mitec_analisis_campaña_mes["Número de clics promedio mensual"]/30
         mitec_analisis_campaña_mes = mitec_analisis_campaña_mes.sort_values(by=["Mes [Fecha]",'Nombre de campaña'], ascending=True).reset_index(drop=True)
         mitec_analisis_campaña_mes = mitec_analisis_campaña_mes[['Nombre de campaña',"Mes","Total de clics mensuales por campaña"]]
+        
+        # Número de iniciativas por campaña y mes
+        num_iniciativas_por_campaña_mes = []
+        for renglon in range(mitec_analisis_campaña_mes.shape[0]):
+            a = df_mitec_2[(df_mitec_2["Nombre de campaña"] == mitec_analisis_campaña_mes["Nombre de campaña"][renglon])&(df_mitec_2["Mes"] == mitec_analisis_campaña_mes["Mes"][renglon])]
+            num_iniciativas_por_campaña_mes.append(len(a["Iniciativa"].unique()))
+        mitec_analisis_campaña_mes["Total de iniciativas por campaña y mes"] = num_iniciativas_por_campaña_mes
+        
+        # Número de clics promedio por iniciativa al mes
+        mitec_analisis_campaña_mes.loc[:,"Número de clics promedio por iniciativa"] = mitec_analisis_campaña_mes.loc[:,"Total de clics mensuales por campaña"]/mitec_analisis_campaña_mes.loc[:,"Total de iniciativas por campaña y mes"]
+        #mitec_analisis_campaña_mes["Total de clics mensuales por campaña"] = mitec_analisis_mes["Total de clics al mes"].apply('{:,}'.format)
+        mitec_analisis_campaña_mes["Número de clics promedio por iniciativa"] = mitec_analisis_campaña_mes["Número de clics promedio por iniciativa"].apply('{:.2f}'.format)
+
         #------------------------------ Download button ----------------------------------
         mitec_analisis_campaña_mes_csv = convert_df(mitec_analisis_campaña_mes)
         fecha_hoy = datetime.now()
         nombre_csv = 'Analisis por campaña y mes_Mitec_' + str(fecha_hoy.date()) + '.csv'
         st.download_button(label = "Descargar datos como CSV",data = mitec_analisis_campaña_mes_csv, file_name = nombre_csv, mime = 'text/csv')
+        
         #--------------------------------------------------------------------------------
         st.dataframe(mitec_analisis_campaña_mes)
 
@@ -178,14 +195,29 @@ elif option_selected == "MiTEC":
         #mitec_analisis_iniciativa_mes["Número de clics promedio diario"] = mitec_analisis_iniciativa_mes["Número de clics promedio mensual"]/30
         mitec_analisis_iniciativa_mes["Identificación de la iniciativa"] = mitec_analisis_iniciativa_mes['Nombre de campaña'] + "_" + mitec_analisis_iniciativa_mes["Iniciativa"]
         mitec_analisis_iniciativa_mes = mitec_analisis_iniciativa_mes.sort_values(by=["Mes [Fecha]"], ascending=True).reset_index(drop=True)
-        mitec_analisis_iniciativa_mes = mitec_analisis_iniciativa_mes[["Identificación de la iniciativa", "Mes", "Total de clics mensuales por iniciativa"]]
+        mitec_analisis_iniciativa_mes_2 = mitec_analisis_iniciativa_mes[["Identificación de la iniciativa", "Mes", "Total de clics mensuales por iniciativa"]]
+        
+        # Número de refuerzos por iniciativa y mes
+        num_refuerzos_por_iniciativa_mes = []
+        for renglon_2 in range(mitec_analisis_iniciativa_mes.shape[0]):
+            b = df_mitec_2[(df_mitec_2["Iniciativa"] == mitec_analisis_iniciativa_mes["Iniciativa"][renglon_2])&(df_mitec_2["Mes"] == mitec_analisis_iniciativa_mes["Mes"][renglon_2])]
+            num_refuerzos_por_iniciativa_mes.append(len(b["MITEC"].unique()))
+        mitec_analisis_iniciativa_mes_2["Total de refuerzos por iniciativa y mes"] = num_refuerzos_por_iniciativa_mes
+
+        # Número de clics promedio por refuerzo al mes
+        mitec_analisis_iniciativa_mes_2.loc[:,"Número de clics promedio por refuerzo"] = mitec_analisis_iniciativa_mes_2.loc[:,"Total de clics mensuales por iniciativa"]/mitec_analisis_iniciativa_mes_2.loc[:,"Total de refuerzos por iniciativa y mes"]
+        #mitec_analisis_campaña_mes["Total de clics mensuales por campaña"] = mitec_analisis_mes["Total de clics al mes"].apply('{:,}'.format)
+        mitec_analisis_iniciativa_mes_2["Número de clics promedio por refuerzo"] = mitec_analisis_iniciativa_mes_2["Número de clics promedio por refuerzo"].apply('{:.2f}'.format)
+
+
         #------------------------------ Download button ----------------------------------
         mitec_analisis_iniciativa_mes_csv = convert_df(mitec_analisis_iniciativa_mes)
         fecha_hoy = datetime.now()
         nombre_csv = 'Analisis por iniciativa y mes_Mitec_' + str(fecha_hoy.date()) + '.csv'
         st.download_button(label = "Descargar datos como CSV",data = mitec_analisis_iniciativa_mes_csv, file_name = nombre_csv, mime = 'text/csv')
+        
         #--------------------------------------------------------------------------------
-        st.dataframe(mitec_analisis_iniciativa_mes)
+        st.dataframe(mitec_analisis_iniciativa_mes_2)
 
     st.markdown('### Análisis de los refuerzos por campaña')
     with st.expander("Ver análisis"):
@@ -326,11 +358,13 @@ elif option_selected == "Correos de HubSpot":
     df_correos_final["Estatus"] = ["No encontrado" if num_nulos>2 else "Encontrado" for num_nulos in df_nulos]
     df_correos_final = df_correos_final[['1er prefijo (TyE)',
         '2do prefijo (pilar)', '3er prefijo (area o VP)','Nombre de campaña','Iniciativa','Estatus',
-        'Mes', 'Mes [Fecha]', 'Correo en HubSpot', 'Responsable',
+        'Mes', 'Mes [Fecha]', 'Correo en HubSpot', "CTA", 'Responsable',
         'Enviado', 'Entregado', 'Tasa de entregas', 'Abierto',
         'Tasa de aperturas', 'Recibió clics', 'Tasa de clics',
         'Tasa de click-through']]
 
+    cta = st.sidebar.radio("Call to action:",('CCTA', 'SCTA', "General"), index = 0)
+    
     metric_options = ["Enviado","Entregado","Tasa de entregas","Abierto","Tasa de aperturas",
                     "Recibió clics","Tasa de clics","Tasa de click-through"]
     metrics_selected = st.sidebar.multiselect("Métricas a analizar:", metric_options, default=["Tasa de click-through"])
@@ -339,10 +373,17 @@ elif option_selected == "Correos de HubSpot":
     month_options.append("Todos los meses")
     months_selected = sidebar.multiselect("Meses:", month_options, default=["Todos los meses"])
 
-    if "Todos los meses" in months_selected:
-        df_correos_2 = df_correos_final.copy()
+    if cta == "CCTA":
+        df_correos_2 = df_correos_final[df_correos_final["CTA"] == "CCTA"].reset_index(drop=True)
+    elif cta == "SCTA":
+        df_correos_2 = df_correos_final[df_correos_final["CTA"] == "SCTA"].reset_index(drop=True)
     else:
-        df_correos_2 = df_correos_final[df_correos_final["Mes"].isin(months_selected)]
+        df_correos_2 = df_correos_final.copy()
+
+    if "Todos los meses" in months_selected:
+        df_correos_2 = df_correos_2.copy()
+    else:
+        df_correos_2 = df_correos_2[df_correos_2["Mes"].isin(months_selected)]
 
     #*****************************************************************************************#
     # Análisis general por mes
