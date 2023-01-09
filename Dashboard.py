@@ -471,7 +471,7 @@ elif option_selected == "Correos de HubSpot":
             'Tasa de aperturas', 'Recibió clics', 'Tasa de clics',
             'Tasa de click-through']]
     df_correos_final = df_correos_final[df_correos_final["Enviado"] != "-"]
-    st.write(df_correos_final)
+
     metric_options_graphic = ["Enviado","Entregado","Tasa de entregas","Abierto","Tasa de aperturas",
                         "Recibió clics","Tasa de clics","Tasa de click-through"]
     metric_selected_graphic = st.selectbox("Métricas a analizar de los correos de HubSpot:", metric_options_graphic, 7)
