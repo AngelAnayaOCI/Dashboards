@@ -392,20 +392,21 @@ elif option_selected == "Correos de HubSpot":
         st.markdown('<div style="text-align: justify;">En el siguiente apartado podrá visualizar las métricas de manera mensual.</div>', unsafe_allow_html=True)
         st.markdown('')
         df_correos = df_correos[df_correos["Enviado"] != "-"]
-        correos_analisis_mes = df_correos.groupby(["Mes"], as_index=False)[["Enviado","Entregado","Tasa de entregas","Abierto","Tasa de aperturas",
+        correos_analisis_mes = df_correos.groupby(['Mes [Fecha]',"Mes"], as_index=False)[["Enviado","Entregado","Tasa de entregas","Abierto","Tasa de aperturas",
                         "Recibió clics","Tasa de clics","Tasa de click-through"]].mean()
-        list_metrics_2 = ["Mes"]
+        list_metrics_2 = ['Mes [Fecha]',"Mes"]
         for i in range(len(metrics_selected)):
             list_metrics_2.append(metrics_selected[i])
         correos_analisis_mes = correos_analisis_mes[list_metrics_2]
-        
+        correos_analisis_mes = correos_analisis_mes.sort_values(by=["Mes [Fecha]"], ascending=True)
+        correos_analisis_mes_2 = correos_analisis_mes.drop(['Mes [Fecha]'], axis=1)
         #------------------------------ Download button ----------------------------------
-        correos_analisis_mes_csv = convert_df(correos_analisis_mes)
+        correos_analisis_mes_csv = convert_df(correos_analisis_mes_2)
         fecha_hoy = datetime.now()
         nombre_csv = 'Analisis general por mes_Hubspot_' + str(fecha_hoy.date()) + '.csv'
         st.download_button(label = "Descargar datos como CSV",data = correos_analisis_mes_csv, file_name = nombre_csv, mime = 'text/csv')
         #--------------------------------------------------------------------------------
-        st.dataframe(correos_analisis_mes)
+        st.dataframe(correos_analisis_mes_2)
 
     #*****************************************************************************************#
     # Análisis por campaña y mes
@@ -470,7 +471,7 @@ elif option_selected == "Correos de HubSpot":
             'Tasa de aperturas', 'Recibió clics', 'Tasa de clics',
             'Tasa de click-through']]
     df_correos_final = df_correos_final[df_correos_final["Enviado"] != "-"]
-    
+    st.write(df_correos_final)
     metric_options_graphic = ["Enviado","Entregado","Tasa de entregas","Abierto","Tasa de aperturas",
                         "Recibió clics","Tasa de clics","Tasa de click-through"]
     metric_selected_graphic = st.selectbox("Métricas a analizar de los correos de HubSpot:", metric_options_graphic, 7)
@@ -482,7 +483,7 @@ elif option_selected == "Correos de HubSpot":
             st.markdown('### Total de '+ titulo_1_0)
             st.markdown('<div style="text-align: justify;">En el siguiente gráfico podrá visualizar el impacto que han tenido los correos enviados por Hubspot a través del tiempo, considerando la métrica de su preferencia.</div>', unsafe_allow_html=True)
             st.markdown('')
-
+            
             fig_correos_0 = go.Figure([go.Scatter(x = correos_analisis_mes['Mes'], 
                                         y = correos_analisis_mes[metric_selected_graphic])])
             fig_correos_0.update_layout(
