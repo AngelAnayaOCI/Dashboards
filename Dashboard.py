@@ -5,6 +5,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
+import matplotlib.pyplot as plt
 from streamlit_option_menu import option_menu
 from datetime import datetime
 
@@ -288,11 +289,14 @@ elif option_selected == "MiTEC":
         mitec_analisis_mes_1.rename(columns = {"Número de clics":"Total de clics recibidos"}, inplace=True)
         mitec_analisis_mes_1 = mitec_analisis_mes_1.sort_values(by=["Mes [Fecha]"], ascending=True).reset_index(drop=True)
 
-        fig_mitec_1 = go.Figure([go.Scatter(x=mitec_analisis_mes_1['Mes'], y=mitec_analisis_mes_1['Total de clics recibidos'])])
-        fig_mitec_1.update_layout(
-            xaxis_title="Mes",
-            yaxis_title="Total de clics recibidos",
-            font=dict(family="Courier New, monospace",size=12,color="Black"))
+        #fig_mitec_1 = go.Figure([go.Scatter(x=mitec_analisis_mes_1['Mes'], y=mitec_analisis_mes_1['Total de clics recibidos'])])
+        #fig_mitec_1.update_layout(
+        #    xaxis_title="Mes",
+        #    yaxis_title="Total de clics recibidos",
+        #    font=dict(family="Courier New, monospace",size=12,color="Black"))
+
+        fig_mitec_1 = px.line(mitec_analisis_mes_1, x = 'Mes', y = 'Total de clics recibidos', markers = True)
+        fig_mitec_1.update_traces(textposition="bottom right")
         
         left_column_mitec_1, right_column_mitec_1 = st.columns([1, 3])
         with left_column_mitec_1:
@@ -330,11 +334,15 @@ elif option_selected == "MiTEC":
         mitec_analisis_mes_2.rename(columns = {"Número de clics":"Total de clics recibidos"}, inplace=True)
         mitec_analisis_mes_2 = mitec_analisis_mes_2.sort_values(by=["Mes [Fecha]"], ascending=True).reset_index(drop=True)
 
-        fig_mitec_2 = go.Figure([go.Scatter(x=mitec_analisis_mes_2['Mes'], y=mitec_analisis_mes_2['Total de clics recibidos'])])
-        fig_mitec_2.update_layout(
-            xaxis_title="Mes",
-            yaxis_title="Total de clics recibidos",
-            font=dict(family="Courier New, monospace",size=12,color="Black"))
+        #fig_mitec_2 = go.Figure([go.Scatter(x=mitec_analisis_mes_2['Mes'], y=mitec_analisis_mes_2['Total de clics recibidos'])])
+        #fig_mitec_2.update_layout(
+        #    xaxis_title="Mes",
+        #    yaxis_title="Total de clics recibidos",
+        #    font=dict(family="Courier New, monospace",size=12,color="Black"))
+
+        #fig_mitec_2 = plt.plot_date(mitec_analisis_mes_2['Mes'], mitec_analisis_mes_2['Total de clics recibidos'])
+        fig_mitec_2 = px.line(mitec_analisis_mes_2, x = 'Mes', y = 'Total de clics recibidos', markers=True)
+        fig_mitec_2.update_traces(textposition="bottom right")
         
         left_column_mitec_2, right_column_mitec_2 = st.columns([1, 3])
         with left_column_mitec_2:
@@ -484,12 +492,15 @@ elif option_selected == "Correos de HubSpot":
             st.markdown('<div style="text-align: justify;">En el siguiente gráfico podrá visualizar el impacto que han tenido los correos enviados por Hubspot a través del tiempo, considerando la métrica de su preferencia.</div>', unsafe_allow_html=True)
             st.markdown('')
             
-            fig_correos_0 = go.Figure([go.Scatter(x = correos_analisis_mes['Mes'], 
-                                        y = correos_analisis_mes[metric_selected_graphic])])
-            fig_correos_0.update_layout(
-                xaxis_title="Mes",
-                yaxis_title="Promedio de " + metric_selected_graphic,
-                font=dict(family="Courier New, monospace",size=12,color="Black"))
+            #fig_correos_0 = go.Figure([go.Scatter(x = correos_analisis_mes['Mes'], 
+            #                            y = correos_analisis_mes[metric_selected_graphic])])
+            #fig_correos_0.update_layout(
+            #    xaxis_title="Mes",
+            #    yaxis_title="Promedio de " + metric_selected_graphic,
+            #    font=dict(family="Courier New, monospace",size=12,color="Black"))
+
+            fig_correos_0 = px.line(correos_analisis_mes, x = 'Mes', y = metric_selected_graphic, markers=True)
+            fig_correos_0.update_traces(textposition = "bottom right")
             
             left_column_correos_0, right_column_correos_0 = st.columns([1, 3])
             with left_column_correos_0:
@@ -531,12 +542,15 @@ elif option_selected == "Correos de HubSpot":
             correos_analisis_mes_with_metric_1 = correos_analisis_mes_with_metric_1.sort_values(by=["Mes [Fecha]"], ascending=True).reset_index(drop=True)
 
             
-            fig_correos_1 = go.Figure([go.Scatter(x = correos_analisis_mes_with_metric_1['Mes'], 
-                                        y = correos_analisis_mes_with_metric_1[metric_selected_graphic])])
-            fig_correos_1.update_layout(
-                xaxis_title="Mes",
-                yaxis_title="Promedio de " + metric_selected_graphic,
-                font=dict(family="Courier New, monospace",size=12,color="Black"))
+            #fig_correos_1 = go.Figure([go.Scatter(x = correos_analisis_mes_with_metric_1['Mes'], 
+            #                            y = correos_analisis_mes_with_metric_1[metric_selected_graphic])])
+            #fig_correos_1.update_layout(
+            #    xaxis_title="Mes",
+            #    yaxis_title="Promedio de " + metric_selected_graphic,
+            #    font=dict(family="Courier New, monospace",size=12,color="Black"))
+
+            fig_correos_1 = px.line(correos_analisis_mes_with_metric_1, x = 'Mes', y = metric_selected_graphic, markers=True)
+            fig_correos_1.update_traces(textposition = "bottom right")
             
             left_column_correos_1, right_column_correos_1 = st.columns([1, 3])
             with left_column_correos_1:
@@ -580,14 +594,16 @@ elif option_selected == "Correos de HubSpot":
 
             correos_analisis_mes_with_metric_2 = correos_analisis_mes_2[list_with_metric_2]
             correos_analisis_mes_with_metric_2 = correos_analisis_mes_with_metric_2.sort_values(by=["Mes [Fecha]"], ascending=True).reset_index(drop=True)
-
             
-            fig_correos_2 = go.Figure([go.Scatter(x = correos_analisis_mes_with_metric_2['Mes'], 
-                                        y = correos_analisis_mes_with_metric_2[metric_selected_graphic])])
-            fig_correos_2.update_layout(
-                xaxis_title="Mes",
-                yaxis_title="Promedio de " + metric_selected_graphic,
-                font=dict(family="Courier New, monospace",size=12,color="Black"))
+            #fig_correos_2 = go.Figure([go.Scatter(x = correos_analisis_mes_with_metric_2['Mes'], 
+            #                            y = correos_analisis_mes_with_metric_2[metric_selected_graphic])])
+            #fig_correos_2.update_layout(
+            #    xaxis_title="Mes",
+            #    yaxis_title="Promedio de " + metric_selected_graphic,
+            #    font=dict(family="Courier New, monospace",size=12,color="Black"))
+
+            fig_correos_2 = px.line(correos_analisis_mes_with_metric_2, x = 'Mes', y = metric_selected_graphic, markers=True)
+            fig_correos_2.update_traces(textposition = "bottom right")
             
             left_column_correos_2, right_column_correos_2 = st.columns([1, 3])
             with left_column_correos_2:

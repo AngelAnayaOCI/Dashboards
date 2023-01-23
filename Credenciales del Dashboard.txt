@@ -1,0 +1,12 @@
+	* Correo de GMAIL de interno:
+		Cuenta: AngelAnaya.OnCampusIntern@gmail.com
+		Contraseña: AngelOCI
+		Correo de recuperación: kikaansyaalamea@gmail.com (cuenta personal del OCI anterior)
+
+	* Github
+		Contraseña: AngelOCI1027
+		Nombre de usuario: AngelAnayaOCI
+		Token: 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
+
+	* Repositorio de github: Dashboards
+		URL: https://github.com/AngelAnayaOCI/Dashboards.git
